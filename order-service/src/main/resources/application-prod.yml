@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+product:
+  service:
+    # In Kubernetes on AWS EKS, CoreDNS resolves internal cluster service names
+    url: ${PRODUCT_SERVICE_URL:http://product-service:8082}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:orderdb}?sslmode=${DB_SSL_MODE:prefer}}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: false
+
+logging:
+  level:
+    root: INFO
+    com.example.orderservice: INFO

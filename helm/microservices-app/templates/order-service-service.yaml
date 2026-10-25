@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+    {{- include "microservices-app.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: order-service
+  ports:
+    - name: http
+      port: {{ .Values.orderService.port }}
+      targetPort: {{ .Values.orderService.port }}

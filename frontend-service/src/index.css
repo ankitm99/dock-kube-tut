@@ -1,0 +1,136 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* ── Header ─────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: #1e293b;
+  color: #f8fafc;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+header h1 { font-size: 1.4rem; }
+
+nav { display: flex; gap: .5rem; }
+nav button {
+  padding: .45rem 1.1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #334155;
+  color: #cbd5e1;
+  font-size: .9rem;
+  transition: background .2s;
+}
+nav button.active, nav button:hover {
+  background: #6366f1;
+  color: #fff;
+}
+
+/* ── Section headings ───────────────────────────── */
+section { margin-bottom: 2rem; }
+h2 { margin-bottom: 1rem; font-size: 1.1rem; color: #374151; }
+
+/* ── Product cards ──────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+.card h3 { font-size: 1rem; color: #1e293b; }
+.card p  { font-size: .85rem; color: #6b7280; flex: 1; }
+.price   { font-weight: 700; color: #6366f1; font-size: 1rem; }
+
+/* ── Orders table ───────────────────────────────── */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  font-size: .9rem;
+}
+.orders-table th, .orders-table td {
+  padding: .7rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+.orders-table th { background: #f9fafb; font-weight: 600; color: #374151; }
+.badge {
+  display: inline-block;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+/* ── Order form ─────────────────────────────────── */
+.order-form {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.order-form label {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  font-size: .88rem;
+  font-weight: 500;
+  color: #374151;
+}
+.order-form select,
+.order-form input {
+  padding: .45rem .7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: .9rem;
+  min-width: 180px;
+}
+.order-form button {
+  padding: .5rem 1.4rem;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: background .2s;
+}
+.order-form button:hover:not(:disabled) { background: #4f46e5; }
+.order-form button:disabled             { opacity: .6; cursor: not-allowed; }
+
+/* ── Status messages ────────────────────────────── */
+.status         { padding: .6rem 1rem; border-radius: 6px; margin-top: .8rem; }
+.status.error   { background: #fee2e2; color: #b91c1c; }
+.status.success { background: #dcfce7; color: #15803d; }

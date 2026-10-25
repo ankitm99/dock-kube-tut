@@ -1,0 +1,6 @@
+apiVersion: v2
+name: microservices-app
+description: A Helm chart for learning Docker, Kubernetes, and Microservices without Eureka
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
