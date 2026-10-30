@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend-service
-          image: frontend-service:latest    # replace with your ECR image in prod
+          image: 076971082484.dkr.ecr.ap-southeast-2.amazonaws.com/frontend-service:v2  # replace with your ECR image in prod
           imagePullPolicy: IfNotPresent     # use Always for ECR
           ports:
             - containerPort: 80

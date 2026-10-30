@@ -10,10 +10,8 @@ RUN npm install
 # Copy source and build
 COPY . .
 
-# VITE_API_BASE_URL is baked in at build time.
-# For local Docker: pass --build-arg VITE_API_BASE_URL=http://localhost:8080
-# For prod K8s:     pass --build-arg VITE_API_BASE_URL=https://<your-alb-dns>
-ARG VITE_API_BASE_URL=/api
+# Leave unset for same-origin API routes in EKS; Docker Compose overrides this with /api.
+ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
@@ -27,7 +25,7 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built React app from Stage 1
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Custom nginx config (handles client-side routing + proxies /api)
+# Production Nginx config; Docker Compose mounts its local gateway proxy config.
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

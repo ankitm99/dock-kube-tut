@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: order-service:latest
+          image: 076971082484.dkr.ecr.ap-southeast-2.amazonaws.com/order-service:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081

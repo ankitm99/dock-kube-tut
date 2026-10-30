@@ -84,6 +84,8 @@ services:
     container_name: frontend-service
     ports:
       - "3000:80"        # open http://localhost:3000 in your browser
+    volumes:
+      - ./frontend-service/nginx-compose.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - api-gateway
     networks:

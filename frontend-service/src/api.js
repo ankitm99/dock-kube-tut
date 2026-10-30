@@ -1,7 +1,6 @@
-// Base URL comes from environment variable injected at Docker build time.
-// Local dev: Vite proxy rewrites /api → http://localhost:8080
-// Docker / K8s: VITE_API_BASE_URL is set to the API Gateway or Ingress host
-const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
+// Use same-origin API routes by default; EKS Ingress routes them to each service.
+// Docker Compose can set VITE_API_BASE_URL=/api to use its Nginx/API Gateway proxy.
+const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export const API = {
   products: () => fetch(`${BASE}/products`),

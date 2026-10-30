@@ -7,7 +7,15 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // In local dev: proxy /api calls to API Gateway running on :8080
+      // Proxy local development API calls to the separately forwarded services.
+      '/products': {
+        target: 'http://localhost:8082',
+        changeOrigin: true
+      },
+      '/orders': {
+        target: 'http://localhost:8081',
+        changeOrigin: true
+      },
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,

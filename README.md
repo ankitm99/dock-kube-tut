@@ -98,14 +98,12 @@ In production on AWS EKS, we use the **AWS Load Balancer Controller (ALB Ingress
    ```
 
 5. **Deploying with Raw Kubernetes Manifests**:
-   If you prefer raw `kubectl` commands instead of Helm:
+   Build and push the frontend image to ECR without setting `VITE_API_BASE_URL`; it will use same-origin `/products` and `/orders` routes through the ALB. After frontend source or Nginx config changes, push a new image tag and update `k8s/frontend-service.yaml` so nodes do not reuse a cached image. Update all three manifests with their ECR image URIs, then apply:
    ```bash
-   # Deploy database and services
-   kubectl apply -f k8s/postgres.yaml
+   # Deploy application services and ALB Ingress; the database is AWS RDS
    kubectl apply -f k8s/product-service.yaml
    kubectl apply -f k8s/order-service.yaml
-
-   # Deploy Ingress (instead of api-gateway)
+   kubectl apply -f k8s/frontend-service.yaml
    kubectl apply -f k8s/ingress.yaml
    ```
 
