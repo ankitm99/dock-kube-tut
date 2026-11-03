@@ -61,44 +61,48 @@ cd api-gateway && mvn spring-boot:run
 
 In production on AWS EKS, we use the **AWS Load Balancer Controller (ALB Ingress)** which routes directly to `product-service` and `order-service`. The Spring Gateway container is automatically disabled to eliminate an unnecessary network hop and save RAM/CPU!
 
-### Deploying with Helm
+### Deploying with Raw Kubernetes Manifests
 
-1. **Connect kubectl to your AWS EKS cluster**:
+The checked-in raw manifests target account `707360336863`, region `us-east-1`, cluster `dev-cluster`, and separate ECR repositories for each service. The learning cluster config uses two small On-Demand nodes in public subnets with no NAT Gateway to reduce network costs; this is not the recommended production network layout, and EKS, EC2, ALB, ECR storage, and RDS can still incur charges.
+
+   To create the cluster from scratch:
    ```bash
-   aws eks update-kubeconfig --region <region> --name <cluster-name>
+   eksctl create cluster --config-file=cluster.yaml
+   aws eks update-kubeconfig --region us-east-1 --name dev-cluster
+   kubectl get nodes
    ```
 
-2. **Deploy using `values-prod.yaml`**:
+   This config enables OIDC and explicitly installs the `vpc-cni`, `kube-proxy`, and `coredns` add-ons. After the cluster is created, retrieve its current OIDC issuer before creating/updating `trust-policy.json` for the AWS Load Balancer Controller; the issuer ID changes when a cluster is recreated.
+
+   Connect to the cluster and push the images using the tags referenced by the manifests:
    ```bash
-   helm install my-app ./helm/microservices-app -f ./helm/microservices-app/values-prod.yaml
+   REGISTRY=707360336863.dkr.ecr.us-east-1.amazonaws.com
+   aws ecr get-login-password --region us-east-1 \
+     | docker login --username AWS --password-stdin "$REGISTRY"
+
+   docker build --platform linux/amd64 -t "$REGISTRY/frontend-service:frontend-v2" ./frontend-service
+   docker build --platform linux/amd64 -t "$REGISTRY/order-service:order-v1" ./order-service
+   docker build --platform linux/amd64 -t "$REGISTRY/product-service:product-v1" ./product-service
+
+   docker push "$REGISTRY/frontend-service:frontend-v2"
+   docker push "$REGISTRY/order-service:order-v1"
+   docker push "$REGISTRY/product-service:product-v1"
    ```
 
-   This automatically:
-   - **Disables `api-gateway`** (`apiGateway.enabled: false`).
-   - **Enables `Ingress`** (`ingress.enabled: true`) with AWS ALB annotations.
-   - Sets **`SPRING_PROFILES_ACTIVE=prod`**.
-   - Scales `product-service` and `order-service` to **3 replicas**.
+   Before applying the backend manifests, create the RDS PostgreSQL instance and the `productdb` and `orderdb` databases (see `init-db/init.sql`). Update the datasource endpoint in both backend manifests to match the instance, and allow inbound PostgreSQL traffic from the EKS nodes in the database security group. The credentials in the manifests are for learning only.
 
-3. **Verify Ingress & Pods**:
+   For public ALB routing, `iam.withOIDC: true` creates the cluster OIDC provider. After each cluster recreation, read the current issuer and update `trust-policy.json` and the AWS Load Balancer Controller IAM role to match it. The controller manifest uses cert-manager to provision its webhook certificate:
    ```bash
-   kubectl get ingress
-   kubectl get pods,pvc,svc
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.3/cert-manager.yaml
+   curl -o /tmp/lbc-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.14.1/docs/install/iam_policy.json
+   aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file:///tmp/lbc-policy.json
+   aws iam create-role --role-name AmazonEKSLoadBalancerControllerRole --assume-role-policy-document file://trust-policy.json
+   aws iam attach-role-policy --role-name AmazonEKSLoadBalancerControllerRole --policy-arn arn:aws:iam::707360336863:policy/AWSLoadBalancerControllerIAMPolicy
+   kubectl apply -f lbc-v2_14_1_full.yaml
    ```
-   AWS will provision an **Application Load Balancer (ALB)** with an address like:
-   `k8s-default-microser-xxxxxxxxxx.us-east-1.elb.amazonaws.com`
+   Wait until cert-manager and the AWS Load Balancer Controller pods are ready before creating the Ingress.
 
-4. **Test AWS ALB Endpoints**:
-   ```bash
-   # Replace with your AWS ALB DNS name
-   ALB_URL="http://k8s-default-microser-xxxxxxxxxx.us-east-1.elb.amazonaws.com"
-
-   curl $ALB_URL/products
-   curl -X POST $ALB_URL/orders -H "Content-Type: application/json" -d '{"productId": 1, "quantity": 2}'
-   curl $ALB_URL/orders
-   ```
-
-5. **Deploying with Raw Kubernetes Manifests**:
-   Build and push the frontend image to ECR without setting `VITE_API_BASE_URL`; it will use same-origin `/products` and `/orders` routes through the ALB. After frontend source or Nginx config changes, push a new image tag and update `k8s/frontend-service.yaml` so nodes do not reuse a cached image. Update all three manifests with their ECR image URIs, then apply:
+   The frontend image uses same-origin `/products` and `/orders` paths through the ALB. After frontend source or Nginx config changes, push a new tag and update `k8s/frontend-service.yaml` so nodes do not reuse an old image. Then apply:
    ```bash
    # Deploy application services and ALB Ingress; the database is AWS RDS
    kubectl apply -f k8s/product-service.yaml
@@ -122,11 +126,10 @@ dock-kube-tut/
 │   ├── values-prod.yaml    # Production AWS EKS (API Gateway OFF, Ingress ON, 3 replicas)
 │   └── templates/          # Kubernetes manifests & Ingress template
 ├── k8s/                    # Raw Kubernetes manifests
-│   ├── ingress.yaml        # AWS ALB Ingress (Production)
-│   ├── api-gateway.yaml    # API Gateway (Local K8s testing)
+│   ├── frontend-service.yaml
 │   ├── order-service.yaml
 │   ├── product-service.yaml
-│   └── postgres.yaml
+│   └── ingress.yaml        # AWS ALB Ingress (Production)
 ├── docker-compose.yml      # Local multi-container development
 └── README.md
 ```

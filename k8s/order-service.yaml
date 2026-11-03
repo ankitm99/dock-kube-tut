@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: 076971082484.dkr.ecr.ap-southeast-2.amazonaws.com/order-service:v1
+          image: 707360336863.dkr.ecr.us-east-1.amazonaws.com/order-service:order-v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
@@ -26,7 +26,7 @@ spec:
             - name: PRODUCT_SERVICE_URL
               value: "http://product-service:8082"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://posgresql-db-instance.clyoyo0o0uei.ap-southeast-2.rds.amazonaws.com:5432/orderdb"
+              value: "jdbc:postgresql://dock-kube-tut-postgres.c8tse06k0g4i.us-east-1.rds.amazonaws.com:5432/orderdb"
             - name: SPRING_DATASOURCE_USERNAME
               value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD

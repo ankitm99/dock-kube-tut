@@ -1199,6 +1199,14 @@ rules:
   - patch
   - update
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::707360336863:role/AmazonEKSLoadBalancerControllerRole
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -1267,7 +1275,7 @@ spec:
     spec:
       containers:
       - args:
-        - --cluster-name=aws-eks-cluster
+        - --cluster-name=dev-cluster
         - --ingress-class=alb
         image: public.ecr.aws/eks/aws-load-balancer-controller:v2.14.1
         livenessProbe:

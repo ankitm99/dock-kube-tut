@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: product-service
-          image: 076971082484.dkr.ecr.ap-southeast-2.amazonaws.com/product-service:v1
+          image: 707360336863.dkr.ecr.us-east-1.amazonaws.com/product-service:product-v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8082
@@ -24,7 +24,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://posgresql-db-instance.clyoyo0o0uei.ap-southeast-2.rds.amazonaws.com:5432/productdb"
+              value: "jdbc:postgresql://dock-kube-tut-postgres.c8tse06k0g4i.us-east-1.rds.amazonaws.com:5432/productdb"
             - name: SPRING_DATASOURCE_USERNAME
               value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD
