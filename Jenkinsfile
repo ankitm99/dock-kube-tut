@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ec2-builder' }
+    agent any
 
     tools {
         jdk 'JDK21'
@@ -27,6 +27,7 @@ pipeline {
         stage('Test and Package') {
             steps {
                 dir('order-service') {
+                    sh 'echo "JAVA_HOME=$JAVA_HOME"; java -version; mvn -version'
                     sh 'mvn -B clean verify'
                 }
             }
