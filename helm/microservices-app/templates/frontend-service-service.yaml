@@ -1,0 +1,19 @@
+{{- if .Values.frontendService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  labels:
+    app: frontend-service
+    {{- include "microservices-app.labels" . | nindent 4 }}
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend-service
+  ports:
+    - name: http
+      port: {{ .Values.frontendService.port }}
+      targetPort: {{ .Values.frontendService.port }}
+{{- end }}

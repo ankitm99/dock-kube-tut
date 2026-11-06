@@ -27,13 +27,19 @@ spec:
             - name: PRODUCT_SERVICE_URL
               value: "http://product-service:{{ .Values.productService.port }}"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://postgres:5432/orderdb"
+              value: "jdbc:postgresql://{{ .Values.postgres.host }}:{{ .Values.postgres.port }}/orderdb"
             - name: SPRING_DATASOURCE_DRIVER
               value: "org.postgresql.Driver"
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ .Values.postgres.credentials.username | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.credentials.secretName | quote }}
+                  key: {{ .Values.postgres.credentials.usernameKey | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
-              value: {{ .Values.postgres.credentials.password | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.credentials.secretName | quote }}
+                  key: {{ .Values.postgres.credentials.passwordKey | quote }}
           resources:
             {{- toYaml .Values.orderService.resources | nindent 12 }}
           livenessProbe:

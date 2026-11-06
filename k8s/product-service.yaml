@@ -26,9 +26,15 @@ spec:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://dock-kube-tut-postgres.c8tse06k0g4i.us-east-1.rds.amazonaws.com:5432/productdb"
             - name: SPRING_DATASOURCE_USERNAME
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: rds-credentials
+                  key: username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: rds-credentials
+                  key: password
           resources:
             requests:
               memory: "256Mi"

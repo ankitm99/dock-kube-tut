@@ -11,10 +11,11 @@ A complete, production-ready microservices repository designed for learning **Do
    Client ──► API Gateway (:8080) ──┬──► product-service (:8082)
                                     └──► order-service (:8081)
 
-2. PRODUCTION ON AWS EKS (Kubernetes Ingress Controller)
-   Client ──► AWS ALB Ingress Controller ──┬──► product-service Pods
-                                           └──► order-service Pods
-              (Spring Cloud Gateway disabled in prod to save costs & eliminate network hop!)
+2. AWS EKS (Kubernetes Ingress Controller)
+   Client ──► AWS Load Balancer Controller / ALB ──┬──► frontend-service Pods
+                                                   ├──► product-service Pods
+                                                   └──► order-service Pods
+              (Spring Cloud Gateway is disabled for this deployment.)
 ```
 
 ---
@@ -89,7 +90,18 @@ The checked-in raw manifests target account `707360336863`, region `us-east-1`, 
    docker push "$REGISTRY/product-service:product-v1"
    ```
 
-   Before applying the backend manifests, create the RDS PostgreSQL instance and the `productdb` and `orderdb` databases (see `init-db/init.sql`). Update the datasource endpoint in both backend manifests to match the instance, and allow inbound PostgreSQL traffic from the EKS nodes in the database security group. The credentials in the manifests are for learning only.
+   Before deploying the backend services, create the RDS PostgreSQL instance and the `productdb` and `orderdb` databases (see `init-db/init.sql`). Update the datasource endpoint to match the instance, and allow inbound PostgreSQL traffic from the EKS nodes in the database security group. Both the Helm chart and raw manifests read database credentials from a `rds-credentials` Secret in the target namespace. Create it from a trusted terminal; the password is prompted without echo:
+   ```bash
+   read -r -s -p "RDS password: " RDS_PASSWORD
+   printf '\n'
+   kubectl create secret generic rds-credentials \
+     --namespace default \
+     --from-literal=username=postgres \
+     --from-literal=password="$RDS_PASSWORD" \
+     --dry-run=client -o yaml | kubectl apply -f -
+   unset RDS_PASSWORD
+   ```
+   Do not commit the Secret or its values to Git. The `values.yaml` local chart configuration references a separate `postgres-credentials` Secret for the in-cluster PostgreSQL option.
 
    For public ALB routing, `iam.withOIDC: true` creates the cluster OIDC provider. After each cluster recreation, read the current issuer and update `trust-policy.json` and the AWS Load Balancer Controller IAM role to match it. The controller manifest uses cert-manager to provision its webhook certificate:
    ```bash
@@ -123,7 +135,7 @@ dock-kube-tut/
 ├── init-db/                # Database initialization scripts (init.sql)
 ├── helm/microservices-app/ # Helm Chart (Parameterized for local vs prod)
 │   ├── values.yaml         # Local dev (API Gateway ON, Ingress OFF)
-│   ├── values-prod.yaml    # Production AWS EKS (API Gateway OFF, Ingress ON, 3 replicas)
+│   ├── values-prod.yaml    # EKS learning deployment (RDS, frontend + ALB, Gateway/Postgres OFF)
 │   └── templates/          # Kubernetes manifests & Ingress template
 ├── k8s/                    # Raw Kubernetes manifests
 │   ├── frontend-service.yaml

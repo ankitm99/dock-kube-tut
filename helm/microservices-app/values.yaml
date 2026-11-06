@@ -4,13 +4,16 @@ global:
 
 postgres:
   enabled: true
+  host: postgres
+  port: 5432
   image:
     repository: postgres
     tag: 16-alpine
     pullPolicy: IfNotPresent
   credentials:
-    username: postgres
-    password: postgres
+    secretName: postgres-credentials
+    usernameKey: username
+    passwordKey: password
   storage:
     size: 1Gi
   resources:
@@ -50,6 +53,22 @@ orderService:
     limits:
       cpu: 500m
       memory: 512Mi
+
+frontendService:
+  enabled: false
+  replicaCount: 1
+  image:
+    repository: frontend-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 # Local / Dev: API Gateway is enabled
 apiGateway:

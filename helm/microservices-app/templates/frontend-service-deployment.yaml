@@ -1,0 +1,39 @@
+{{- if .Values.frontendService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-service
+  labels:
+    app: frontend-service
+    {{- include "microservices-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontendService.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend-service
+  template:
+    metadata:
+      labels:
+        app: frontend-service
+    spec:
+      containers:
+        - name: frontend-service
+          image: "{{ .Values.frontendService.image.repository }}:{{ .Values.frontendService.image.tag }}"
+          imagePullPolicy: {{ .Values.frontendService.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontendService.port }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.frontendService.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.frontendService.port }}
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.frontendService.resources | nindent 12 }}
+{{- end }}

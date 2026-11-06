@@ -24,9 +24,15 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_USER
-              value: {{ .Values.postgres.credentials.username | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.credentials.secretName | quote }}
+                  key: {{ .Values.postgres.credentials.usernameKey | quote }}
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgres.credentials.password | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.credentials.secretName | quote }}
+                  key: {{ .Values.postgres.credentials.passwordKey | quote }}
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
@@ -36,7 +42,10 @@ spec:
             {{- toYaml .Values.postgres.resources | nindent 12 }}
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", {{ .Values.postgres.credentials.username | quote }}]
+              command:
+                - pg_isready
+                - -U
+                - postgres
             initialDelaySeconds: 10
             periodSeconds: 5
       volumes:

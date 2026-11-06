@@ -2,36 +2,70 @@ global:
   environment: prod
   springProfile: prod
 
+postgres:
+  enabled: false
+  host: dock-kube-tut-postgres.c8tse06k0g4i.us-east-1.rds.amazonaws.com
+  port: 5432
+  credentials:
+    secretName: rds-credentials
+    usernameKey: username
+    passwordKey: password
+
 productService:
-  replicaCount: 3
+  replicaCount: 1
+  image:
+    repository: 707360336863.dkr.ecr.us-east-1.amazonaws.com/product-service
+    tag: product-v1
+    pullPolicy: IfNotPresent
+  port: 8082
   resources:
     requests:
-      cpu: 250m
-      memory: 512Mi
+      cpu: 100m
+      memory: 256Mi
     limits:
-      cpu: 1000m
-      memory: 1Gi
+      cpu: 500m
+      memory: 512Mi
 
 orderService:
-  replicaCount: 3
+  replicaCount: 1
+  image:
+    repository: 707360336863.dkr.ecr.us-east-1.amazonaws.com/order-service
+    tag: order-v1
+    pullPolicy: IfNotPresent
+  port: 8081
   resources:
     requests:
-      cpu: 250m
-      memory: 512Mi
+      cpu: 100m
+      memory: 256Mi
     limits:
-      cpu: 1000m
-      memory: 1Gi
+      cpu: 500m
+      memory: 512Mi
 
-# Production: Disable Spring Cloud Gateway container
+frontendService:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: 707360336863.dkr.ecr.us-east-1.amazonaws.com/frontend-service
+    tag: frontend-v2
+    pullPolicy: IfNotPresent
+  port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# EKS deployment routes directly through the ALB to the microservices.
 apiGateway:
   enabled: false
 
-# Production: Enable Kubernetes Ingress (AWS ALB Ingress Controller)
 ingress:
   enabled: true
   className: alb
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
