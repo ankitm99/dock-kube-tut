@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'ec2-builder' }
 
     tools {
         jdk 'JDK21'
@@ -29,7 +29,7 @@ pipeline {
                 dir('order-service') {
                     sh 'mvn -B clean verify'
                 }
-            }
+            }ff
         }
 
         stage('SonarQube Analysis') {
