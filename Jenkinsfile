@@ -29,7 +29,7 @@ pipeline {
                 dir('order-service') {
                     sh 'mvn -B clean verify'
                 }
-            }ff
+            }
         }
 
         stage('SonarQube Analysis') {
