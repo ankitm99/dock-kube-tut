@@ -17,8 +17,8 @@ pipeline {
         SONAR_HOST_URL = 'http://54.80.253.206:9000/'
         SONAR_PROJECT_KEY = 'order-service'
         COVERAGE_THRESHOLD = '80.0'
-        GITOPS_REPOSITORY = 'https://github.com/ankitm99/dock-kube-tut-gitops.git'
-        GITOPS_CREDENTIALS_ID = 'gitops-https'
+        GITOPS_REPOSITORY = 'git@github.com:ankitm99/dock-kube-tut-gitops.git'
+        GITOPS_CREDENTIALS_ID = 'git-ssh'
         SONAR_CREDENTIALS_ID = 'sonarqube-token'
     }
 
@@ -105,10 +105,7 @@ pipeline {
 
         stage('Update Image Tag in GitOps') {
             steps {
-                withCredentials([gitUsernamePassword(
-                    credentialsId: env.GITOPS_CREDENTIALS_ID,
-                    gitToolName: 'Default'
-                )]) {
+                sshagent(credentials: [env.GITOPS_CREDENTIALS_ID]) {
                     sh '''
                         set -eu
                         git clone "$GITOPS_REPOSITORY" gitops
