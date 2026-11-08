@@ -14,7 +14,7 @@ pipeline {
         AWS_REGION = 'us-east-1'
         AWS_ACCOUNT_ID = '707360336863'
         ECR_REPOSITORY = 'order-service'
-        SONAR_HOST_URL = 'http://54.80.253.206:9000/'
+        SONAR_HOST_URL = 'http://54.80.253.206:9000'
         SONAR_PROJECT_KEY = 'order-service'
         COVERAGE_THRESHOLD = '80.0'
         GITOPS_REPOSITORY = 'git@github.com:ankitm99/dock-kube-tut-gitops.git'
@@ -56,7 +56,7 @@ pipeline {
                                 set -eu
                                 for attempt in $(seq 1 24); do
                                     response=$(curl --fail --silent --show-error \
-                                      --header "Authorization: Bearer $SONAR_TOKEN\" \
+                                      --user "$SONAR_TOKEN:" \
                                       "$SONAR_HOST_URL/api/measures/component?component=$SONAR_PROJECT_KEY&metricKeys=coverage")
                                     value=$(printf '%s' "$response" \
                                       | jq -r '.component.measures[]? | select(.metric == "coverage") | .value // empty' \
