@@ -19,7 +19,7 @@ pipeline {
         COVERAGE_THRESHOLD = '80.0'
         GITOPS_REPOSITORY = 'git@github.com:ankitm99/dock-kube-tut-gitops.git'
         GITOPS_CREDENTIALS_ID = 'git-ssh'
-        SONAR_CREDENTIALS_ID = 'squ_9dfe86ceb4d2a5b787a760330932734db2e26408'
+        SONAR_CREDENTIALS_ID = 'sonarqube-token'
     }
 
     stages {
@@ -56,7 +56,7 @@ pipeline {
                                 set -eu
                                 for attempt in $(seq 1 24); do
                                     response=$(curl --fail --silent --show-error \
-                                      --header "Authorization: Bearer $SONAR_TOKEN" \
+                                      --header "Authorization: Bearer $SONAR_TOKEN\" \
                                       "$SONAR_HOST_URL/api/measures/component?component=$SONAR_PROJECT_KEY&metricKeys=coverage")
                                     value=$(printf '%s' "$response" \
                                       | jq -r '.component.measures[]? | select(.metric == "coverage") | .value // empty' \
