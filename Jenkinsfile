@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ec2-builder' }
+    agent any
 
     tools {
         jdk 'JDK21'
