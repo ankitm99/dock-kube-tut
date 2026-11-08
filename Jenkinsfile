@@ -108,6 +108,7 @@ pipeline {
                 sshagent(credentials: [env.GITOPS_CREDENTIALS_ID]) {
                     sh '''
                         set -eu
+                        rm -rf -- gitops
                         git clone "$GITOPS_REPOSITORY" gitops
                         cd gitops
                         VALUES_FILE="helm/microservices-app/values-prod.yaml"
