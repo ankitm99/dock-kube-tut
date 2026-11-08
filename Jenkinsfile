@@ -19,7 +19,7 @@ pipeline {
         COVERAGE_THRESHOLD = '80.0'
         GITOPS_REPOSITORY = 'git@github.com:ankitm99/dock-kube-tut-gitops.git'
         GITOPS_CREDENTIALS_ID = 'git-ssh'
-        SONAR_CREDENTIALS_ID = 'sonarqube-token'
+        SONAR_CREDENTIALS_ID = 'squ_9dfe86ceb4d2a5b787a760330932734db2e26408'
     }
 
     stages {
@@ -32,55 +32,55 @@ pipeline {
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         dir('order-service') {
-        //             withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
-        //                 sh '''
-        //                     mvn -B sonar:sonar \
-        //                       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
-        //                       -Dsonar.host.url="$SONAR_HOST_URL" \
-        //                       -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-        //                 '''
-        //             }
-        //         }
-        //     }
-        // }
+        stage('SonarQube Analysis') {
+            steps {
+                dir('order-service') {
+                    withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            mvn -B sonar:sonar \
+                              -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+                              -Dsonar.host.url="$SONAR_HOST_URL" \
+                              -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                        '''
+                    }
+                }
+            }
+        }
 
-        // stage('Check Code Coverage') {
-        //     steps {
-        //         withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
-        //             script {
-        //                 def coverage = sh(
-        //                     script: '''
-        //                         set -eu
-        //                         for attempt in $(seq 1 24); do
-        //                             response=$(curl --fail --silent --show-error \
-        //                               --header "Authorization: Bearer $SONAR_TOKEN" \
-        //                               "$SONAR_HOST_URL/api/measures/component?component=$SONAR_PROJECT_KEY&metricKeys=coverage")
-        //                             value=$(printf '%s' "$response" \
-        //                               | jq -r '.component.measures[]? | select(.metric == "coverage") | .value // empty' \
-        //                               | head -n 1)
-        //                             if [ -n "$value" ]; then
-        //                                 printf '%s' "$value"
-        //                                 exit 0
-        //                             fi
-        //                             sleep 5
-        //                         done
-        //                         echo "SonarQube coverage measure was not available after waiting." >&2
-        //                         exit 1
-        //                     ''',
-        //                     returnStdout: true
-        //                 ).trim().toDouble()
+        stage('Check Code Coverage') {
+            steps {
+                withCredentials([string(credentialsId: "${SONAR_CREDENTIALS_ID}", variable: 'SONAR_TOKEN')]) {
+                    script {
+                        def coverage = sh(
+                            script: '''
+                                set -eu
+                                for attempt in $(seq 1 24); do
+                                    response=$(curl --fail --silent --show-error \
+                                      --header "Authorization: Bearer $SONAR_TOKEN" \
+                                      "$SONAR_HOST_URL/api/measures/component?component=$SONAR_PROJECT_KEY&metricKeys=coverage")
+                                    value=$(printf '%s' "$response" \
+                                      | jq -r '.component.measures[]? | select(.metric == "coverage") | .value // empty' \
+                                      | head -n 1)
+                                    if [ -n "$value" ]; then
+                                        printf '%s' "$value"
+                                        exit 0
+                                    fi
+                                    sleep 5
+                                done
+                                echo "SonarQube coverage measure was not available after waiting." >&2
+                                exit 1
+                            ''',
+                            returnStdout: true
+                        ).trim().toDouble()
 
-        //                 echo "Coverage: ${coverage}%"
-        //                 if (coverage < env.COVERAGE_THRESHOLD.toDouble()) {
-        //                     error "Coverage is below the ${env.COVERAGE_THRESHOLD}% threshold."
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+                        echo "Coverage: ${coverage}%"
+                        if (coverage < env.COVERAGE_THRESHOLD.toDouble()) {
+                            error "Coverage is below the ${env.COVERAGE_THRESHOLD}% threshold."
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Build and Push Image to ECR') {
             steps {
