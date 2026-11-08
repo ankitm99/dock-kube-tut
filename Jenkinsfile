@@ -19,7 +19,7 @@ pipeline {
         COVERAGE_THRESHOLD = '80.0'
         GITOPS_REPOSITORY = 'git@github.com:ankitm99/dock-kube-tut-gitops.git'
         GITOPS_CREDENTIALS_ID = 'git-ssh'
-        SONAR_CREDENTIALS_ID = 'sonarqube-token'
+        SONAR_CREDENTIALS_ID = 'SonarToken'
     }
 
     stages {
