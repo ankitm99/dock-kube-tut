@@ -11,7 +11,7 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>🛒 Shop2 Dashboard</h1>
+        <h1>🛒 Shop3 Dashboard</h1>
         <nav>
           <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>Products</button>
           <button className={tab === 'orders'   ? 'active' : ''} onClick={() => setTab('orders')}>Orders</button>
